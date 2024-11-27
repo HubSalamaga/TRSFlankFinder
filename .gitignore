@@ -3,3 +3,12 @@ python/*_results_*/
 python/taxonomy_16_08
 python/data
 python/.vscode
+python/trsomix_wrapper/build
+python/trsomix_wrapper/dist
+python/trsomix_wrapper/trsomix_wrapper.egg-info
+python/trsomix_wrapper/_trs_omix.cpython-36m-x86_64-linux-gnu.so
+python/trsomix_wrapper/_trs_omix.cpython-310-x86_64-linux-gnu.so
+python/trsomix_wrapper/_trs_omix.o
+python/trsomix_wrapper/trs_omix.c
+python/trsomix_wrapper/trs_omix.o
+python/TRS_part.ipynb
