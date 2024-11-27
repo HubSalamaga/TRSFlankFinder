@@ -2,3 +2,4 @@ python/notebooks
 python/*_results_*/
 python/taxonomy_16_08
 python/data
+python/.vscode
