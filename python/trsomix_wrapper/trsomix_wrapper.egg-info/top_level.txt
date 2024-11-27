@@ -1,2 +1,0 @@
-_trs_omix
-trsomix_wrapper
