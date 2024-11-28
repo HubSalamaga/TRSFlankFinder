@@ -171,6 +171,8 @@ class SequenceProcessor:
          g=0,
          G=1,
          sc=None,
+         M=0,
+         T=0,
          results_directory="results" #wtf ??
     ):
         """
@@ -193,6 +195,8 @@ class SequenceProcessor:
              "-M", m,
              "-g", str(g),
              "-G", str(G),
+             "-M", str(M),
+             "-T", str(T)
         ]
         
         if sc is not None:
