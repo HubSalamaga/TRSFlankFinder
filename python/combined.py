@@ -358,7 +358,7 @@ def main():
     # Set the paths to the query directory and BLAST database
     query_dir = sequences_after_clusters_filtering_folder  
     blast_db = args.blast_db
-    perc_identity = 100 #should probably lower that to 90 or less 
+    perc_identity = 100 #should probably lower that to 90 or less - first pass let's keep it at 100
 
     # Set the environment variables before running the SLURM script
     env = os.environ.copy()
@@ -598,7 +598,7 @@ def main():
     # Set the paths to the query directory and BLAST database
     query_dir = intermediate_results  
     blast_db = args.blast_db
-    perc_identity = 100
+    perc_identity = 90 
     blast_results_folder_2nd_pass = os.path.join(results_directory,"blast_output_2nd_pass")
     
 

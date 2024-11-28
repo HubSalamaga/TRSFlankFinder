@@ -607,7 +607,7 @@ class BLASTProcessor:
                     if state == 1:
                         processed_index = original_index + 2
                     elif state == 2:
-                        processed_index = original_index
+                        processed_index = original_index + 1
                     else:
                         raise ValueError("Invalid state value. State must be 1 or 2.")
 

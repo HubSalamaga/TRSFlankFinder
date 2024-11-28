@@ -12,3 +12,5 @@ python/trsomix_wrapper/_trs_omix.o
 python/trsomix_wrapper/trs_omix.c
 python/trsomix_wrapper/trs_omix.o
 python/TRS_part.ipynb
+python/testing.csv
+python/TRS_part.ipynb
