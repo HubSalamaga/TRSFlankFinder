@@ -744,6 +744,7 @@ def main():
     file_paths = [file_path for file_path in fasta_files_for_plotting if file_path in statistics.file_info]
     names_to_filter = ["full_sequences_final.fasta"]
     file_paths = [file_path for file_path in file_paths if os.path.basename(file_path) in names_to_filter]
+   
     print(f"{file_paths}")
     # Dictionary to store titles for each file path
     file_titles = {}
@@ -782,9 +783,18 @@ def main():
     # Add entry to file_titles dictionary
     file_titles[file_path] = default_title
 
-
-
     statistics.plot_lr_counts(file_paths=file_paths,file_titles=file_titles,results_directory=results_directory)
+
+    #BINOMIAL TEST
+    full_seq_final = os.path.join(output_directory,"full_sequences_final.fasta")
+    final_results_folder = output_directory
+    df = Stats.create_trs_class_dataframe(output_folder_cluster)
+    df = Stats.get_trs_class_totals(df) 
+    df_full_fasta = statistics.create_lr_counts_dataframe(file_path=full_seq_final)
+    merged_df = Stats.merge_trs_classes_results(df_full_fasta,df)
+    result_df = Stats.test_binomial_for_classes(merged_df)
+    result_df.index.name = "Class"
+    with_counts_df, significant_df = Stats.save_binom_results(result_df,final_results_folder)
 
 
 if __name__ == "__main__":
