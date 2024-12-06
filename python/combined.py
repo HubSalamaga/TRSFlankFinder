@@ -794,7 +794,7 @@ def main():
     merged_df = Stats.merge_trs_classes_results(df_full_fasta,df)
     result_df = Stats.test_binomial_for_classes(merged_df)
     result_df.index.name = "Class"
-    with_counts_df, significant_df = Stats.save_binom_results(result_df,final_results_folder)
+    Stats.save_binom_results(result_df,final_results_folder)
 
 
 if __name__ == "__main__":
