@@ -610,5 +610,11 @@ class FileHandler:
                 if cluster_size == 1:
                     print(f"Skipping individual FASTA file creation for clusters of size 1.")
                 continue
-            # Separate sequences for each cluster within the cluster size
+            # Separate sequences for each cluster within the cluster size 
+            '''Maybe something to read what clusters were already calculated because for larger datasets it's very time consuming mayber something like
+            
+            if not create_individual_files or cluster_size in range(1, clusters_to_skip):
+                if cluster_size in range(1,clusters_to_skip):
+                print(f"Skipping individual FASTA file creation for clusters of cluster_size)
+            '''
             FileHandler.write_fasta_for_individual_clusters(cdhit_clusters_file, input_fasta, cluster_size, cluster_size_folder)
