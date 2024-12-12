@@ -13,9 +13,9 @@ class TRS_cols(Enum):
 
 class TRScalculator:
     def __init__(self, sequence=b"sequence.fasta", trs=b"trs.txt", interiors=b"interiors.txt", tmin=100, tmax=3000, mode=0, seq_id=0):
-        self.sequence = sequence
-        self.trs = trs
-        self.interiors = interiors
+        self.sequence = sequence.decode() if isinstance(sequence, bytes) else sequence
+        self.trs = trs.decode() if isinstance(trs, bytes) else trs
+        self.interiors = interiors.decode() if isinstance(interiors, bytes) else interiors
         self.tmin = tmin
         self.tmax = tmax
         self.mode = mode
@@ -32,9 +32,25 @@ class TRScalculator:
         if len(fasta_file_content) != 1:
             exit(-1)
 
-        pGfn = ffi.cast("char *", ffi.from_buffer(self.sequence))
-        pTfn = ffi.cast("char *", ffi.from_buffer(self.trs))
-        pIfn = ffi.cast("char *", ffi.from_buffer(self.interiors))
+        # Read the content of input files
+        with open(self.sequence, 'r') as seq_file:
+            sequence_data = seq_file.read()
+
+        with open(self.trs, 'r') as trs_file:
+            trs_data = trs_file.read()
+
+        with open(self.interiors, 'r') as interiors_file:
+            interiors_data = interiors_file.read()
+
+        # Debugging output
+        print(f"Sequence type: {type(self.sequence)}, value: {self.sequence}")
+        print(f"TRS type: {type(self.trs)}, value: {self.trs}")
+        print(f"Interiors type: {type(self.interiors)}, value: {self.interiors}")
+
+        # Cast strings to ffi-compatible pointers
+        pGfn = ffi.cast("char *", ffi.from_buffer(self.sequence.encode('utf-8')))
+        pTfn = ffi.cast("char *", ffi.from_buffer(self.trs.encode('utf-8')))
+        pIfn = ffi.cast("char *", ffi.from_buffer(self.interiors.encode('utf-8')))
 
         tmin = ffi.cast("long long", self.tmin)
         tmax = ffi.cast("long long", self.tmax)
