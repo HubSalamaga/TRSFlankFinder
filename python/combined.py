@@ -193,19 +193,20 @@ def main():
             print("Results already exist. Use --redo to overwrite or --cont to continue from existing results. Exiting program.")
             sys.exit(1)
 
-        print("Starting analysis...")
+        print("Starting analysis...")   
 
         trs_calculators = []
 
         # Iterate over each FASTA file to calculate TRS sequences
         for fasta_file in fasta_files:
             path_to_input_fasta = os.path.join(args.input_fasta_folder_path, fasta_file)
+            print(f"{path_to_input_fasta}")
             if not os.path.exists(path_to_input_fasta):
                 print(f"File '{fasta_file}' does not exist! Skipping....")
                 continue
 
             # Define the TRS file path
-            trs_file = os.path.join(args.input_fasta_folder_path, 'trs.txt').encode()
+            trs_file = os.path.join(args.input_fasta_folder_path, 'trs.txt').encode('utf-8')
             if not os.path.exists(trs_file):
                 script_dir = os.path.dirname(os.path.abspath(__file__))
                 trs_file = os.path.join(script_dir,'trs.txt')
@@ -215,7 +216,7 @@ def main():
 
             try:
                 # Initialize TRS calculator for each sequence and perform TRS search
-                trs_calculator = TRScalculator(sequence=path_to_input_fasta.encode(), trs=trs_file, tmin=args.tmin, tmax=args.tmax, mode=args.mode)
+                trs_calculator = TRScalculator(sequence=path_to_input_fasta.encode('utf-8'), trs=trs_file, tmin=args.tmin, tmax=args.tmax, mode=args.mode)
                 trs_calculator.calculate()
                 trs_calculators.append(trs_calculator)
             except Exception as e:
