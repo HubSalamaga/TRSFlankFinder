@@ -206,17 +206,23 @@ def main():
                 continue
 
             # Define the TRS file path
-            trs_file = os.path.join(args.input_fasta_folder_path, 'trs.txt').encode('utf-8')
+            trs_file = os.path.abspath(os.path.join(args.input_fasta_folder_path, 'trs.txt'))
+            print(f"TRS file found at {trs_file}")
             if not os.path.exists(trs_file):
                 script_dir = os.path.dirname(os.path.abspath(__file__))
-                trs_file = os.path.join(script_dir,'trs.txt')
-                if not os.path.exists(trs_file):
-                    print("TRS file not found in both input folder and script location! Exiting...")
-                    break
+                trs_file = os.path.abspath(os.path.join(script_dir, 'trs.txt'))
+                if not os.path.isfile(trs_file) or not os.access(trs_file, os.R_OK):
+                    print(f"Cannot read TRS file at: {trs_file}. Check permissions or file encoding.")
+                    sys.exit(1)
+
+            interiors_file = os.path.join(path_of_folder_storing_TRS_analysis_results, 'interiors.txt')
+            print(f"Interiors file will be created at: {interiors_file}")
 
             try:
                 # Initialize TRS calculator for each sequence and perform TRS search
-                trs_calculator = TRScalculator(sequence=path_to_input_fasta.encode('utf-8'), trs=trs_file, tmin=args.tmin, tmax=args.tmax, mode=args.mode)
+                trs_calculator = TRScalculator(sequence=path_to_input_fasta, trs=trs_file.encode('utf-8') if isinstance(trs_file, str) else trs_file, 
+                                               interiors=interiors_file.encode('utf-8') if isinstance(interiors_file, str) else interiors_file,
+                                               tmin=args.tmin, tmax=args.tmax, mode=args.mode)
                 trs_calculator.calculate()
                 trs_calculators.append(trs_calculator)
             except Exception as e:
@@ -232,15 +238,15 @@ def main():
             # Append the result to the list
             list_of_trs_results.append(result)
 
-        # Concatenate all results into a single DataFrame
-        combined_trs_results = pd.concat(list_of_trs_results, ignore_index=True)
+    # Concatenate all results into a single DataFrame
+    combined_trs_results = pd.concat(list_of_trs_results, ignore_index=True)
 
-        # Remove ">" from >SEQ column
-        combined_trs_results[">SEQ"] = combined_trs_results[">SEQ"].str.replace(">","")
+    # Remove ">" from >SEQ column
+    combined_trs_results[">SEQ"] = combined_trs_results[">SEQ"].str.replace(">","")
 
-        # Save the results of the first analysis step to the CSV file
-        combined_trs_results.to_csv(path_of_csv_file_storing_TRS_analysis_results, index=False)
-        print(f"Results saved to {path_of_csv_file_storing_TRS_analysis_results}")
+    # Save the results of the first analysis step to the CSV file
+    combined_trs_results.to_csv(path_of_csv_file_storing_TRS_analysis_results, index=False)
+    print(f"Results saved to {path_of_csv_file_storing_TRS_analysis_results}") 
 
     trs_time = time.time() #Record time taken for TRS search
     print(f"TRS took {trs_time - start_time} seconds")
@@ -259,7 +265,7 @@ def main():
     results_directory_after_flanks_extracted = f"{results_directory}_L{l_chars}_R{r_chars}"
     results_directory_after_flanks_extracted_path = os.path.join(os.path.dirname(results_directory), results_directory_after_flanks_extracted)
 
-    print(f"Results directory is set to: {results_directory_after_flanks_extracted_path}")
+    print(f"Results directory is set to: {results_directory_after_flanks_extracted_path}") #WE ARE HERE
 
     # Rename the results directory if necessary
     if not args.cont:

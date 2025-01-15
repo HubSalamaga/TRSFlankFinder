@@ -122,7 +122,7 @@ class SequenceProcessor:
                         record.id = new_id
                         record.description = ""
                         SeqIO.write(record,output_handle,"fasta")
-                        if 'R' in original_id:
+                        if re.search(r"_R([1-9]|[1-5][0-9]|60)$", original_id):
                                 pair_index += 1
                     print(f"Sequences successfully renamed and saved at {output_file}!")
         except FileNotFoundError:
@@ -251,7 +251,10 @@ class SequenceProcessor:
         """
         try:
             with open(input_file, "r") as input_handle, open(output_file, "w") as output_handle:
-                for record in SeqIO.parse(input_handle, "fasta"):
+                records = list(SeqIO.parse(input_handle, "fasta"))  # Get the total count for tqdm
+                input_handle.seek(0)  # Reset file pointer
+
+                for record in tqdm(SeqIO.parse(input_handle, "fasta"), total=len(records), desc="Processing sequences"):
                     processed_record = processor_func(record)
                     SeqIO.write(processed_record, output_handle, "fasta")
         except FileNotFoundError:
@@ -266,7 +269,7 @@ class SequenceProcessor:
     @staticmethod
     def rename_sequences(input_file, output_file):
         """
-        Renames sequences in a FASTA file using a general processor function.
+        Renames sequences in a FASTA file using a general processor function with additional functionality.
         """
         def rename_processor(record):
             nonlocal pair_index
@@ -274,8 +277,11 @@ class SequenceProcessor:
             new_id = f"{original_id}_{pair_index}"
             record.id = new_id
             record.description = ""
-            if 'R' in original_id:
+
+            # Increment pair_index only if original_id matches the specific pattern
+            if re.search(r"_R([1-9]|[1-5][0-9]|60)$", original_id):
                 pair_index += 1
+
             return record
 
         pair_index = 1
