@@ -103,14 +103,15 @@ optional arguments:
 ```
 
 ```
-usage: combined.py [-h] --input_fasta_folder_path INPUT_FASTA_FOLDER_PATH
-                   --tmin TMIN --tmax TMAX --mode MODE [--redo] [--cont]
-                   --email EMAIL --threshold THRESHOLD --length_to_extract
-                   LENGTH_TO_EXTRACT [--cd_hit_path CD_HIT_PATH]
-                   [--taxonomy_db TAXONOMY_DB] [--update_taxonomy]
-                   [--ids_to_add_to_dictionary IDS_TO_ADD_TO_DICTIONARY | --ids_file IDS_FILE]
-                   [--taxids_to_add_to_exceptions TAXIDS_TO_ADD_TO_EXCEPTIONS | --taxids_file TAXIDS_FILE]
-                   --blast_db BLAST_DB
+usage: TRS_full_pipeline.py [-h] --input_fasta_folder_path
+                            INPUT_FASTA_FOLDER_PATH --tmin TMIN --tmax TMAX
+                            --mode MODE [--redo] [--cont] --email EMAIL
+                            --threshold THRESHOLD --length_to_extract
+                            LENGTH_TO_EXTRACT [--cd_hit_path CD_HIT_PATH]
+                            [--taxonomy_db TAXONOMY_DB] [--update_taxonomy]
+                            [--ids_to_add_to_dictionary IDS_TO_ADD_TO_DICTIONARY | --ids_file IDS_FILE]
+                            [--taxids_to_add_to_exceptions TAXIDS_TO_ADD_TO_EXCEPTIONS | --taxids_file TAXIDS_FILE]
+                            --blast_db BLAST_DB
 
 This program extracts TRS sequences from a series of input genomes, allows for
 length selection of extracted fragments, and prepares sequences for further
@@ -125,7 +126,7 @@ optional arguments:
   --tmax TMAX           Maximum length of TRS sequences
   --mode MODE           Mode of operation, must be 0 or 1
   --redo                Redo the analysis if results directory already exists
-  --cont                Continue the analysis from saved TRS results file
+  --cont                Continue the analysis from saved TRS results file (currently disabled)
   --email EMAIL         Address e-mail to be used for connection with NCBI
                         databases
   --threshold THRESHOLD
@@ -151,16 +152,4 @@ optional arguments:
   --blast_db BLAST_DB   Path to your blast_db
 
 ```
-
-## ToDo's:
-
-### Simple Tasks
-
-1. **Sequence Flanking Correction**: Add flanking sequences (`*CGACGACGACG*`) analogously on the right side. 
-
-### Advanced
-
-1. **Introduce a way to resume processing from the last completed step**: Find crucial points in pipeline, after their completion add currently stored variables and info about present files to .json (or other format). Bonus points with args we should instantly know what the name of the folder *should be* so we can instantly do a search (function for it is present) and prompt the user for folder if we find multiple (we are using fnmatch) if .json is found load it. The problem here is that i have no experience with something like this so I'll need help with creating the logic behind it.
-7. Ciąg dalszy .....
-
 
