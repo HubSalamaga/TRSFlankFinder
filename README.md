@@ -145,7 +145,7 @@ optional arguments:
   --blast_db BLAST_DB   Path to your blast_db
 
 ```
-#Acknowledgements
+# Acknowledgements
 
 The content of the repository is derived from its predecessor, available at:
 [https://github.com/TRS-omix/software](https://github.com/TRS-omix/software) described in more detail in **Sebastian Sakowski, Marta Majchrzak, Jacek Waldmajer, Pawel Parniewski**: *TRS-omix: a new search engine for trinucleotide flanked sequences*. 2021.
