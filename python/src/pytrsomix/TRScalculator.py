@@ -5,6 +5,10 @@ import pandas as pd
 import parasail
 from enum import Enum
 
+#THERE SEEMS TO BE AN ERROR RELATED TO FASTA/FOLDER NAMES 
+#SO FAR I HAD A LOT OF PROBLEMS TRYING TO REPRODUCE IT BUT I HAVE SOME CLUES
+#A ) PROBABILITY OF THE ERROR OCCURING SEEMS TO SCALE WITH THE AMOUNT OF FASTA FILES
+#B ) FOLDER NAMES CONTAINING _ OR OTHER SPECIAL CHARACTERS ARE MORE LIKELY TO LEAD TO PROBLEMS
 
 class TRS_cols(Enum):
     SEQ_COLUMN = ">SEQ"
@@ -26,11 +30,17 @@ class TRScalculator:
         pass
 
     def calculate(self):
-        fasta_file_content = list(SeqIO.parse(self.sequence, format="fasta"))
-        if len(fasta_file_content) != 1:
+        try:
+            fasta_file_content = list(SeqIO.parse(self.sequence, format="fasta"))
+            if not fasta_file_content:
+                raise FileNotFoundError(f"No records found in the genome file: {self.sequence}")
+            if len(fasta_file_content) !=1:
+                raise ValueError(f"Expected exactly one record in {self.sequence}, but found {len(fasta_file_content)}.")
+        except Exception as e:
+            print(f"Error reading genome file: {e}")
             exit(-1)
 
-        # Debugging output
+
         print(f"Encoded Sequence: {self.sequence.encode('utf-8') if isinstance(self.sequence, str) else self.sequence}")
         print(f"Encoded TRS: {self.trs.encode('utf-8') if isinstance(self.trs, str) else self.trs}")
         print(f"Encoded Interiors: {self.interiors.encode('utf-8') if isinstance(self.interiors, str) else self.interiors}")

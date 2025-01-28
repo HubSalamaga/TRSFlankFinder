@@ -336,7 +336,7 @@ def main():
     #New way to filter clusters
     input_fasta = os.path.join(results_directory,"TRS_output","combined_sequences_unique.fasta")
     output_folder_cluster = os.path.join(cd_hit_results_folder,"fasta_clusters")
-    FileHandler.create_fasta_for_all_clusters(cdhit_clusters_file, input_fasta, output_folder_cluster,create_individual_files=False)
+    FileHandler.create_fasta_for_all_clusters(cdhit_clusters_file, input_fasta, output_folder_cluster,create_individual_files=True)
 
     cluster_size_1_fasta = os.path.join(output_folder_cluster, "cluster_size_1.fasta")
     sequences_after_clusters_filtering_folder = os.path.join(results_directory, "filtered_sequences")
