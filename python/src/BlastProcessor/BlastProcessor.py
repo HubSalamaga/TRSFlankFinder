@@ -574,6 +574,7 @@ class BLASTProcessor:
     def extract_full_TRS_sequences(df,fasta_file,results_directory,state):
         """Executes the below functions"""
         original_indices,incremented_indices = BLASTProcessor.parse_txt_indices(fasta_file,state)
+        original_indices = [idx - 1 for idx in original_indices]
         filtered_df = BLASTProcessor.extract_rows_from_csv(df=df,row_indices=original_indices)
         BLASTProcessor.create_fasta_file_with_full_TRS_sequences(df,filtered_df,results_directory,incremented_indices,state)
 
@@ -595,23 +596,21 @@ class BLASTProcessor:
 
         with open(txt_file, 'r') as file:
             for line in file:
-                # Split the line into columns and get the first column
                 first_column = line.strip().split('\t')[0]
-                # Extract the part after the last '_'
                 index = first_column.split('_')[-1]
                 try:
-                    original_index = int(index) - 1
-                    original_indices.append(original_index)
-
-                    # Process index based on state
                     if state == 1:
-                        processed_index = original_index + 2
+                        original_index = int(index) - 1  # Convert to 0-based
+                        processed_index = original_index + 2  # Align properly
                     elif state == 2:
-                        processed_index = original_index + 1
+                        original_index = int(index) - 1  # Fix: Convert to 0-based
+                        processed_index = original_index + 1  # Fix: Ensure alignment
                     else:
                         raise ValueError("Invalid state value. State must be 1 or 2.")
 
+                    original_indices.append(original_index)
                     processed_indices.append(processed_index)
+
                 except ValueError:
                     print(f"Skipping invalid sequence ID: {first_column}")
 
