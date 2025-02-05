@@ -200,7 +200,6 @@ def main():
         # Iterate over each FASTA file to calculate TRS sequences
         for fasta_file in fasta_files:
             path_to_input_fasta = os.path.join(args.input_fasta_folder_path, fasta_file)
-            print(f"{path_to_input_fasta}")
             if not os.path.exists(path_to_input_fasta):
                 print(f"File '{fasta_file}' does not exist! Skipping....")
                 continue
@@ -299,7 +298,7 @@ def main():
     
     #Prepare a dataframe containing flanking sequneces and their IDs.
     sequences_df = combined_trs_results[['SEQ_L', 'SEQ_R', 'L_id', 'R_id']]
-    print(sequences_df)
+
     
     #Write the extracted sequences to a FASTA file
     path_of_folder_storing_TRS_analysis_results = os.path.join(results_directory, "TRS_output")
@@ -415,8 +414,8 @@ def main():
     # Filter taxonomy file based on collected accessions
     taxonomy_db = os.path.join(taxonomy_db,"nucl_gb.accession2taxid.gz")
     tax_df = SequenceProcessor.filter_taxonomy_file(taxonomy_db, accessions)
-    print("Collected Accessions:", accessions)
-    print("Filtered Taxonomy DataFrame:\n", tax_df)
+    # print("Collected Accessions:", accessions)
+    # print("Filtered Taxonomy DataFrame:\n", tax_df) Debug 
 
     # Create a mapping between accession numbers and taxids
     print(f"Creating a mapping between accessions and taxids....")
@@ -457,7 +456,7 @@ def main():
 
     #Set the Entrez e-mail for further processing - seems like for some reason it refuses to remember it a this step and does not pass it into future ncbi requests
     Entrez.email = SequenceProcessor.validate_and_set_email(args.email)
-    print(f"Current email is set to {Entrez.email}")
+    
 
     #Fetch taxonomic information for the collected genome IDs
     ncbi_ids = combined_results["GENOME"].unique().tolist()
@@ -477,7 +476,7 @@ def main():
     species_info = BLASTProcessor.append_taxids_to_filtered_map(filtered_organism_taxid_map)
     species_info = {SequenceProcessor.filter_key_parts(key): value for key, value in species_info.items()}
 
-    # Prepare NaN file path for storing the results with missing acessions
+    # Prepare NaN file path for storing the results with missing accessions
     '''The blast db or taxonomy database is out of date if there are entries here, the problem is that the internal ncbi database gets updated much more
     frequently that the ones available for download, to remedy that atleast partially some way to user database to available online could be introduced'''
     nan_file = os.path.join(modified_blast_path,"NaN acessions.csv")
@@ -486,8 +485,7 @@ def main():
     results_dict = BLASTProcessor.construct_dict_from_files(modified_blast_path,nan_file)
 
 
-    #Ask for exceptions to filtering based on taxids - exceptions will not be consider as disquilifying when they are found as matches for a sequence
-    '''Large pool of exceptions my lead to untrustworthy results, however they should get rectified in the 2nd pass'''
+    #Load exceptions to filtering based on taxids - exceptions will not be consider as disquilifying when they are found as matches for a sequence
     exceptions = BLASTProcessor.ask_for_exception(exception_ids=taxids_to_add_to_exceptions,file_path=taxids_file)
     if exceptions:
         print(f"Exceptions to filtering added: {exceptions}")
@@ -520,23 +518,12 @@ def main():
     print("Filtering files...")
     FileHandler.process_files_with_filter(modified_blast_path,filtered_keys_final)
 
-    # '''Separate reads in and outside of clusters into two categories 1) reads that have a matching pair (twins) 2) reads that do not (singles)'''
-    # processed_fasta_file_path = FileHandler.find_file_by_name(file_name="unique_taxids_in_clusters_combined_sequences_unique_blastn_out.txt",folder=results_directory)
-    # print(f"{processed_fasta_file_path}")
-    # processed_fasta_file_path = pathlib.Path(processed_fasta_file_path[0]).parent
-
-    # #Separate the sequences into "singles" and "twins" based on clustering results
-    # BLASTProcessor.separate_into_singles_and_twins(processed_fasta_file_path,file_pattern="*.txt")
-
-    # #Read the sequence IDs from the processed FASTA file and classify them into a valid dictionary
-    # '''Create a special_dict that contains all sequence IDs that occur either in clusters or have no pair, the sequence_ids_dict contains the remaining IDs'''
-    # sequence_ids_dict, special_dict = BLASTProcessor.read_sequence_ids(processed_fasta_file_path)
 
     #Find the filtered FASTA file that contains all sequences(but unique)
     filtered_fasta_file = FileHandler.find_file_by_name('unique_taxids_not_in_clusters_combined_sequences_unique_blastn_out.txt',folder= results_directory)
     filtered_fasta_file = pathlib.Path(filtered_fasta_file[0])
 
-    #Ensure the output directory exists for storing of filtred results 
+    #Ensure the output directory exists for storing the filtred results 
     intermediate_results = os.path.join(results_directory,"intermediate_results")
     FileHandler.ensure_directory_exists(intermediate_results)
     #fasta_to_parse = BLASTProcessor.filter_fasta_file_dict(filtered_fasta_file,sequence_ids_dict,special_dict,output_directory)

@@ -574,7 +574,8 @@ class BLASTProcessor:
     def extract_full_TRS_sequences(df,fasta_file,results_directory,state):
         """Executes the below functions"""
         original_indices,incremented_indices = BLASTProcessor.parse_txt_indices(fasta_file,state)
-        original_indices = [idx - 1 for idx in original_indices]
+        if state == 2:
+            original_indices = [idx - 1 for idx in original_indices]
         filtered_df = BLASTProcessor.extract_rows_from_csv(df=df,row_indices=original_indices)
         BLASTProcessor.create_fasta_file_with_full_TRS_sequences(df,filtered_df,results_directory,incremented_indices,state)
 

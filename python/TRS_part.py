@@ -10,6 +10,13 @@ import sys
 from src.SequenceProcessor import SequenceProcessor
 from src.FileHandler import FileHandler
 from src.pytrsomix import SeqAnalyzer,TRScalculator
+from src.BlastProcessor import BLASTProcessor
+from src.stats import Stats
+import subprocess
+import pathlib
+import requests
+from datetime import datetime
+from urllib.parse import urljoin
 #comment
 
 import pathlib
@@ -52,6 +59,8 @@ def main():
     parser.add_argument('--cd_hit_path', help="Path to the cd-hit-est executable", required=False, type=str)
     args = parser.parse_args()
 
+
+    #Validate and set email used for querying ncbi services
     Entrez.email = SequenceProcessor.validate_and_set_email(args.email)
     print(f"Email adress is currently set to {Entrez.email}")
 
@@ -117,12 +126,24 @@ def main():
                 print(f"File '{fasta_file}' does not exist! Skipping....")
                 continue
 
-            # Define the TRS file path dynamically (this example assumes a static path, modify as needed)
-            trs_file = os.path.join(args.input_fasta_folder_path, 'trs.txt').encode()
+            # Define the TRS file path
+            trs_file = os.path.abspath(os.path.join(args.input_fasta_folder_path, 'trs.txt'))
+            print(f"TRS file found at {trs_file}")
+            if not os.path.exists(trs_file):
+                script_dir = os.path.dirname(os.path.abspath(__file__))
+                trs_file = os.path.abspath(os.path.join(script_dir, 'trs.txt'))
+                if not os.path.isfile(trs_file) or not os.access(trs_file, os.R_OK):
+                    print(f"Cannot read TRS file at: {trs_file}. Check permissions or file encoding.")
+                    sys.exit(1)
+            
+            interiors_file = os.path.join(path_of_folder_storing_TRS_analysis_results, 'interiors.txt')
+            print(f"Interiors file will be created at: {interiors_file}")
 
             try:
-                # Initialize and calculate TRS
-                trs_calculator = TRScalculator(sequence=path_to_input_fasta.encode(), trs=trs_file, tmin=args.tmin, tmax=args.tmax, mode=args.mode)
+                # Initialize TRS calculator for each sequence and perform TRS search
+                trs_calculator = TRScalculator(sequence=path_to_input_fasta, trs=trs_file.encode('utf-8') if isinstance(trs_file, str) else trs_file, 
+                                               interiors=interiors_file.encode('utf-8') if isinstance(interiors_file, str) else interiors_file,
+                                               tmin=args.tmin, tmax=args.tmax, mode=args.mode)
                 trs_calculator.calculate()
                 trs_calculators.append(trs_calculator)
             except Exception as e:
@@ -148,7 +169,7 @@ def main():
         combined_trs_results.to_csv(path_of_csv_file_storing_TRS_analysis_results, index=False)
         print(f"Results saved to {path_of_csv_file_storing_TRS_analysis_results}")
 
-    trs_time = time.time()
+    trs_time = time.time() #Record time taken for TRS search
     print(f"TRS took {trs_time - start_time} seconds")
 
     l_chars = SequenceProcessor.adjust_input_to_range(args.length_to_extract, args.tmin)
@@ -163,6 +184,7 @@ def main():
 
     print(f"Results directory is set to: {results_directory_after_flanks_extracted_path}")
 
+    # Rename the results directory if necessary
     if not args.cont:
         if not os.path.exists(results_directory_after_flanks_extracted_path):
             # Rename the existing results directory
@@ -188,12 +210,14 @@ def main():
     if len(unmatched_genomes) > 0:
         print(f"Warning: Some genome IDs could not be matched with taxonomic names: {unmatched_genomes}")
     
-    # Extract sequences and create sequence IDs
+    # Generate sequence IDs for left and right flanking sequences 
     combined_trs_results['L_id'] = combined_trs_results['Taxonomic Name'] + '_L' + combined_trs_results['L-No'].astype(str)
     combined_trs_results['R_id'] = combined_trs_results['Taxonomic Name'] + '_R' + combined_trs_results['R-No'].astype(str)
-    sequences_df = combined_trs_results[['SEQ_L', 'SEQ_R', 'L_id', 'R_id']]
-    print(sequences_df)
     
+    #Prepare a dataframe containing flanking sequneces and their IDs.
+    sequences_df = combined_trs_results[['SEQ_L', 'SEQ_R', 'L_id', 'R_id']]
+
+    #Write the extracted sequences to a FASTA file
     path_of_folder_storing_TRS_analysis_results = os.path.join(results_directory, "TRS_output")
     fasta_files_with_flanks = os.path.join(path_of_folder_storing_TRS_analysis_results, "combined_sequences.fasta")
     with open(fasta_files_with_flanks, 'w') as fasta_file:
@@ -204,45 +228,52 @@ def main():
             # Write right sequence
             fasta_file.write(f'>{row["R_id"]}\n')
             fasta_file.write(f'{row["SEQ_R"]}\n')
-
+    
+    #Create unique FASTA file with renamed sequences (including ids and L/R identifiers)
     fasta_files_with_flanks_unique = os.path.join(path_of_folder_storing_TRS_analysis_results, "combined_sequences_unique.fasta")
     SequenceProcessor.rename_sequences(fasta_files_with_flanks, fasta_files_with_flanks_unique)
-
+    
+    #Ensure that directory for CD-HIT results exists
     cd_hit_results_folder = os.path.join(results_directory, "cd-hit-results")
     FileHandler.ensure_directory_exists(cd_hit_results_folder)
+    #Define the path for output files
     cd_hit_output_file = os.path.join(cd_hit_results_folder, "combined_sequences_unique_cdhit")
-    #automatic finding does not work as expected - meaning that it doesn't work at all
-    if args.cd_hit_path:
-        cd_hit_path = args.cd_hit_path
-    else:
-        cd_hit_path = FileHandler.find_file_by_name(file_name='cd-hit-est')
-        cd_hit_path = cd_hit_path[0]
-        cd_hit_path = pathlib.Path(cd_hit_path).parent
+    cd_hit_path = args.cd_hit_path
 
+    #Run CD-HIT clustering on the sequences to identify the similar ones
     results_directory = SequenceProcessor.run_cdhit(cd_hit_path, input_file=fasta_files_with_flanks_unique, output_file=cd_hit_output_file,
                                                     results_directory=results_directory, sc=1, c=args.threshold)
-    
+    #Prepare for further processing
     cd_hit_results_folder = os.path.join(results_directory, "cd-hit-results")
     cdhit_clusters_file = os.path.join(cd_hit_results_folder, "combined_sequences_unique_cdhit.clstr")
-    non_unique_sequences = os.path.join(cd_hit_results_folder, "combined_sequences_clusters.txt")
-    SequenceProcessor.extract_sequence_ids(cdhit_clusters_file, non_unique_sequences)
-    clusters_to_be_cleaned = non_unique_sequences
-    SequenceProcessor.clean_sequence_ids(clusters_to_be_cleaned)
-    clusters_cleaned = clusters_to_be_cleaned
-    print(f'current results dir : {results_directory}')
-    print(f'{cd_hit_results_folder}')
-    fasta_ids_to_remove_because_they_were_in_clusters = FileHandler.read_fasta_ids(clusters_cleaned)
+    
+    #NEW WAY
+    input_fasta = os.path.join(results_directory,"TRS_output","combined_sequences_unique.fasta")
+    output_folder_cluster = os.path.join(cd_hit_results_folder,"fasta_clusters")
+    FileHandler.create_fasta_for_all_clusters(cdhit_clusters_file, input_fasta, output_folder_cluster,create_individual_files=True)
+    
+    cluster_size_1_fasta = os.path.join(output_folder_cluster, "cluster_size_1.fasta")
     sequences_after_clusters_filtering_folder = os.path.join(results_directory, "filtered_sequences")
     FileHandler.ensure_directory_exists(sequences_after_clusters_filtering_folder)
-    #THERE IS A PROBLEM HERE WITH ASSINGNING VALID FOLDER NAMES
+    renamed_fasta_file = os.path.join(sequences_after_clusters_filtering_folder, "not_in_clusters_combined_sequences_unique.fasta")
+    
+    try:
+        with open(cluster_size_1_fasta, 'rb') as src_file, open(renamed_fasta_file, 'wb') as dest_file:
+            dest_file.write(src_file.read())
+        print(f"Copied and renamed {cluster_size_1_fasta} to {renamed_fasta_file}")
+    except FileNotFoundError:
+        print(f"Error: {cluster_size_1_fasta} not found.")
+    except PermissionError:
+        print(f"Error: Permission denied when accessing {cluster_size_1_fasta} or {renamed_fasta_file}.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
-    fasta_with_clustered_ids_removed = os.path.join(sequences_after_clusters_filtering_folder, "not_in_clusters_combined_sequences_unique.fasta")
-    fasta_with_clustered_ids_included = os.path.join(sequences_after_clusters_filtering_folder, "in_clusters_combined_sequences_unique.fasta")
-    fasta_files_with_flanks_unique =os.path.join(results_directory,"TRS_output","combined_sequences_unique.fasta")
+    fasta_files_with_flanks_unique = os.path.join(results_directory,"TRS_output","combined_sequences_unique.fasta")
     blast_results_folder = os.path.join(results_directory, "blast_output")
     FileHandler.ensure_directory_exists(blast_results_folder)
-    FileHandler.filter_fasta_file(fasta_files_with_flanks_unique, fasta_with_clustered_ids_removed, fasta_ids_to_remove_because_they_were_in_clusters)
-    FileHandler.filter_fasta_file_clusters(fasta_files_with_flanks_unique, fasta_with_clustered_ids_included, fasta_ids_to_remove_because_they_were_in_clusters)
 
+
+    #NEW WAY
+    
 if __name__ == "__main__":
     main()

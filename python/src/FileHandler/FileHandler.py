@@ -271,48 +271,6 @@ class FileHandler:
                 except IOError as e:
                     print(f"An error occurred while opening or reading {file_path}: {e}")
     @staticmethod
-    def filter_fasta_file(input_file, output_file, fasta_ids_to_remove, chunk_size=1024*1024):
-        FileHandler.filter_fasta(input_file, output_file, fasta_ids_to_remove, include=False, chunk_size=chunk_size)
-    @staticmethod
-    def filter_fasta_file_clusters(input_file, output_file, fasta_ids_to_include):
-        FileHandler.filter_fasta(input_file, output_file, fasta_ids_to_include, include=True)
-    @staticmethod
-    def filter_fasta(input_file, output_file, ids_to_check, include=True, chunk_size=1024*1024):
-        """
-        Filter entries from a FASTA file based on IDs.
-
-        Parameters:
-        - input_file (str): Path to the input FASTA file.
-        - output_file (str): Path where the filtered FASTA file will be saved.
-        - ids_to_check (set): A set of FASTA IDs to be checked.
-        - include (bool): If True, include sequences with IDs in ids_to_check. If False, exclude them.
-        - chunk_size (int): Size of the chunk to read at a time (in bytes). Default is 1MB.
-        """
-        try:
-            with open(input_file, 'r') as f_in, open(output_file, 'w') as f_out:
-                fasta_entry = []
-                write_entry = include
-
-                for line in f_in:
-                    if line.startswith('>'):
-                        if fasta_entry and write_entry:
-                            f_out.writelines(fasta_entry)
-                        fasta_entry = [line]
-                        current_fasta_id = line.strip()[1:]
-                        write_entry = (current_fasta_id in ids_to_check) if include else (current_fasta_id not in ids_to_check)
-                    else:
-                        fasta_entry.append(line)
-
-                if fasta_entry and write_entry:
-                    f_out.writelines(fasta_entry)
-    
-        except FileNotFoundError:
-            print(f"Error: File {input_file} not found.")
-        except PermissionError:
-            print(f"Error: Permission denied when accessing the file {input_file} or {output_file}")
-        except Exception as e:
-            print(f"An error occurred: {e}")
-    @staticmethod
     def search_for_files(search_path,file_name):
         found = []
         for root, _, files in os.walk(search_path):
