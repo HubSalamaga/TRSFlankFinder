@@ -1,4 +1,4 @@
-# TRS-omix: Search Engine
+# TRSFlankFinder : Detection of unique sequences flanked by trinucleotide repeats
 
 ## Overview
 
