@@ -5,11 +5,13 @@
 > [!NOTE]
 > 1. **`TRS_part.py`**: This script is used to obtain initial results for subsequent BLAST analysis.
 >
-> 2. **`TRS_BLAST.sh`** BLASTS sequences from a specific directory against nt database at 100% identity threshold.
+> 2. **`TRS_BLAST.sh`** BLASTS sequences from a specific directory against nt database at 100% identity threshold during first pass, at 90% during the 2nd.
 >
-> 3. **`Blast_part.py`**: This script is used to obtain final results from BLAST files. 
+> 3. **`Blast_first_pass.py`**: This script is used to obtain intermediate results from BLAST files. 
 >
-> 4. **Combined pipeline using `combined.py`**: This script executes all the steps above including the BLASTing step and automatically detects which version of the script to use depending on slurm availability (as of now threads and memory parameters can be changed only in the scripts themselves)
+> 4. **`Blast_second_pass.py`**: This script is used to obtain the final results from BLAST files.
+> 
+> 5. **Combined pipeline using `TRSFlankFinder.py`**: This script executes all the steps above including the BLASTing step and automatically detects which version of the script to use depending on slurm availability (as of now threads and memory parameters can be changed only in the scripts themselves)
 
 ## Requirements:
 
