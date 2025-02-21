@@ -69,7 +69,7 @@ optional arguments:
 ```
 
 ```
-usage: Blast_part.py [-h] --blast_output_path BLAST_OUTPUT_PATH --taxonomy_db
+usage: Blast_first_pass.py.py [-h] --blast_output_path BLAST_OUTPUT_PATH --taxonomy_db
                      TAXONOMY_DB --email EMAIL
                      [--ids_to_add_to_dictionary IDS_TO_ADD_TO_DICTIONARY | --ids_file IDS_FILE]
                      [--taxids_to_add_to_exceptions TAXIDS_TO_ADD_TO_EXCEPTIONS | --taxids_file TAXIDS_FILE]
@@ -98,7 +98,7 @@ optional arguments:
 ```
 
 ```
-usage: TRS_full_pipeline.py [-h] --input_fasta_folder_path
+usage: TRSFlankFinder.py [-h] --input_fasta_folder_path
                             INPUT_FASTA_FOLDER_PATH --tmin TMIN --tmax TMAX
                             --mode MODE [--redo] [--cont] --email EMAIL
                             --threshold THRESHOLD --length_to_extract
