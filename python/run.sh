@@ -10,7 +10,7 @@
 source ~/miniconda3/etc/profile.d/conda.sh && conda activate TRS
 
 # Path to your Python script
-python_script="combined.py"
+python_script="TRSFlankFinder.py"
 
 # Check if --help is passed as an argument
 if [[ "$1" == "--help" ]]; then

@@ -73,8 +73,8 @@ def check_and_update_taxonomy_file(taxonomy_db_path, force_download=False):
 #
 def main():
     start_time = time.time()
-    parser = argparse.ArgumentParser(description='''This program analyzes the blast output files to find species specific sequences coming from genomes
-                                     analyzed in the previous step''')
+    parser = argparse.ArgumentParser(description='''This program analyzes the blast output files to find potential full sequence candidates 
+                                     that should be BLASTED once again and the results passed to Blast_sceond_pass.py''')
     parser.add_argument('--blast_output_path', help="Path to a folder containing blast results in a valid format", type=str, required=True)
     parser.add_argument('--taxonomy_db',help='Path to the taxonomy - accession database', required=True, type= str)
     parser.add_argument('--update_taxonomy', help="Download and overwrite outdated taxonomy file", required=False, action='store_true')
@@ -229,10 +229,6 @@ def main():
     FileHandler.ensure_directory_exists(intermediate_results)
 
     BLASTProcessor.extract_full_TRS_sequences(combined_results,filtered_fasta_file,results_directory,state=1)
-
-    #NEW
-
-# THINK VERRRRY HARD HOW TO MAKE IT WORK WITH SECOND STEP OF BLAST
 
 if __name__ == "__main__":
     main()
